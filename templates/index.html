@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <script>
+      $(document).ready(function () {
+        $.ajaxSetup({ cache: false });
+        setInterval(function () {
+          $("#face").attr(
+            "src",
+            "../static/people_photo/test.jpg?" + new Date().getTime()
+          );
+        }, 2000);
+      });
+    </script>
+
+    {% if result != None %}
+    <img src="{{ result }}" id="face" width="500" />
+    {% endif %}
+  </body>
+</html>
