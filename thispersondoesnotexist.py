@@ -27,34 +27,61 @@ async def get_online_person() -> bytes:
             return await r.read()
 
 
+def get_checksum_from_picture(picture: bytes, method: str = "md5") -> str:
+    """Calculate the checksum of the provided picture, using the desired method.
+    Available methods can be fetched using the the algorithms_available function.
+    :param picture: picture as bytes
+    :param method: hashing method as string (optional, default=md5)
+    :return: checksum as string
+    """
+    h = hashlib.new(method.lower())
+    h.update(picture)
+    return h.hexdigest()
+
+
+async def save_picture(picture: bytes, file: str = None) -> None:
+    """Save a picture to a file.
+    The picture must be provided as it content as bytes.
+    The filename must be provided as a str with the absolute or relative path where to store it.
+    If no filename is provided, a filename will be generated using the MD5 checksum of the picture, with jpeg extension.
+    :param picture: picture content as bytes
+    :param file: filename as string, relative or absolute path (optional)
+    :return: None
+    """
+    if file is None:
+        file = get_checksum_from_picture(picture) + ".jpeg"
+    async with aiofiles.open(file, "wb") as f:
+        await f.write(picture)
+
+
 def create_collages(image_dir):
     image_path = os.listdir(image_dir)
 
     # Specify collage size.
-    # TODO: Determine the size of a web page to determine collage size.
+    # TODO: Use the size of a web page to determine collage size.
     collage_size = 6
 
     # Horizontally stacking images to create rows.
     rows = []
-    k = 0  # counter for number of rows
     cur_row = cv2.imread(os.path.join(image_dir, image_path[0]))
-    for i in range(collage_size**2):
+    for i in range(1, collage_size**2):
         if i % collage_size == 0:
-            if k > 0:
-                # Finished with row, append this one and start new one.
-                rows.append(cur_row)
-                k = 0
+            # Finished with row, append this one and start new one.
+            rows.append(cur_row)
             cur_row = cv2.imread(os.path.join(image_dir, image_path[i]))
-            k += 1
+        elif i == 35:
+            # append last row.
+            cur_img = cv2.imread(os.path.join(image_dir, image_path[i]))
+            cur_row = np.hstack([cur_row, cur_img])
+            rows.append(cur_row)
         else:
             # Continue stacking images to horizontal row.
             cur_img = cv2.imread(os.path.join(image_dir, image_path[i]))
             cur_row = np.hstack([cur_row, cur_img])
-            if (i == 35):
-                rows.append(cur_row)
 
-    collage = rows[-1]
-    for i in range(len(rows)-1):
+    # Append all horizontal rows vertically.
+    collage = rows[0]
+    for i in range(1, len(rows)):
         collage = np.vstack([rows[i], collage])
 
     return collage
@@ -64,6 +91,7 @@ async def main():
     while True:
         # Get image from thispersondoesnotexist.com
         picture = await get_online_person()  # bytes representation of the image
+        await save_picture(picture, "a_beautiful_person.jpeg")
 
         # Cascade files.
         face_cascade = cv2.CascadeClassifier(
@@ -95,13 +123,12 @@ async def main():
         # Remove old eye images when it reaches a certain length.
         eyedir = os.listdir("./tmp/")
         diramount = len(os.listdir("./tmp/"))
-        if (diramount > 42):
+        if (diramount > 36):
             for i in range(diramount - 36):
                 f = eyedir[diramount - 1 - i]
                 os.remove("./tmp/" + f)
 
-        addr = 'https://these-eyes-do-not-exist.herokuapp.com/'
-        # addr = 'http://127.0.0.1:5000'
+        addr = 'http://127.0.0.1:5000'
 
         server_url = addr + '/api/test'
         # prepare headers for http request
@@ -112,7 +139,7 @@ async def main():
         response = requests.post(
             server_url, data=img_encoded.tobytes(), headers=headers)
 
-        time.sleep(1)
+        time.sleep(2)
 
 
 if __name__ == "__main__":
