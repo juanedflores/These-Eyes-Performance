@@ -4,6 +4,23 @@
   <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   </head>
+  <style type="text/css" media="screen">
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+    }
+    div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    img {
+      display: block;
+      margin: auto;
+    }
+  </style>
   <body>
     <script>
       $(document).ready(function () {
@@ -17,8 +34,10 @@
       });
     </script>
 
-    {% if result != None %}
-    <img src="{{ result }}" id="face" width="500" />
-    {% endif %}
+    <div>
+      {% if result != None %}
+      <img src="{{ result }}" id="face" width="500" />
+      {% endif %}
+    </div>
   </body>
 </html>

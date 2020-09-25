@@ -54,7 +54,7 @@ async def save_picture(picture: bytes, file: str = None) -> None:
         await f.write(picture)
 
 
-def create_collages(image_dir):
+def create_collage(image_dir):
     image_path = os.listdir(image_dir)
 
     # Specify collage size.
@@ -118,7 +118,7 @@ async def main():
                 # cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey+eh), (255, 255, 255), 0)
 
         # Create a collage.
-        collage = create_collages("./tmp/")
+        collage = create_collage("./tmp/")
 
         # Remove old eye images when it reaches a certain length.
         eyedir = os.listdir("./tmp/")
