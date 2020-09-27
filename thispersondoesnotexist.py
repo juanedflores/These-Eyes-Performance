@@ -59,7 +59,7 @@ def create_collage(image_dir):
 
     # Specify collage size.
     # TODO: Use the size of a web page to determine collage size.
-    collage_size = 6
+    collage_size = 12
 
     # Horizontally stacking images to create rows.
     rows = []
@@ -69,7 +69,7 @@ def create_collage(image_dir):
             # Finished with row, append this one and start new one.
             rows.append(cur_row)
             cur_row = cv2.imread(os.path.join(image_dir, image_path[i]))
-        elif i == 35:
+        elif i == (collage_size**2)-1:
             # append last row.
             cur_img = cv2.imread(os.path.join(image_dir, image_path[i]))
             cur_row = np.hstack([cur_row, cur_img])
@@ -99,23 +99,25 @@ async def main():
         eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
         # Prep image.
+        # img = cv2.imread("a_beautiful_person.jpeg")
         img = cv2.imread("a_beautiful_person.jpeg")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Iterate faces.
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x, y, w, h) in faces:
-            # img = cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 0)
+            img = cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 0)
             roi_gray = gray[y:y+h, x:x+w]
             roi_color = img[y:y+h, x:x+w]
             eyes = eye_cascade.detectMultiScale(roi_gray)
             for (ex, ey, ew, eh) in eyes:
-                print("new eyes..")
+                print("new eye..")
                 eyeimg = roi_color[ey:ey+eh, ex:ex+ew]
                 # make it a 60 x 60 pixel image.
                 eyeimg = cv2.resize(eyeimg, (60, 60))
                 cv2.imwrite('./tmp/eyes_' + str(ew) + str(eh) + '.jpg', eyeimg)
-                # cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey+eh), (255, 255, 255), 0)
+                # cv2.rectangle(roi_color, (ex, ey),
+                #               (ex+ew, ey+eh), (255, 255, 255), 0)
 
         # Create a collage.
         collage = create_collage("./tmp/")
@@ -123,8 +125,10 @@ async def main():
         # Remove old eye images when it reaches a certain length.
         eyedir = os.listdir("./tmp/")
         diramount = len(os.listdir("./tmp/"))
-        if (diramount > 36):
-            for i in range(diramount - 36):
+        maxfileamount = 144
+        if (diramount > maxfileamount):
+            for i in range(diramount - maxfileamount):
+                print("deleting eye..")
                 f = eyedir[diramount - 1 - i]
                 os.remove("./tmp/" + f)
 

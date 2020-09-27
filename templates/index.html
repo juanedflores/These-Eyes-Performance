@@ -3,25 +3,41 @@
 <html>
   <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  </head>
-  <style type="text/css" media="screen">
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: black;
-    }
-    div {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    img {
-      display: block;
-      margin: auto;
-    }
-  </style>
-  <body>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script> -->
+    <!-- <script src="/static/js/sketch.js"></script> -->
+    <script src="/static/js/webcam.js"></script>
+    <style type="text/css" media="screen">
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+      }
+      div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      img {
+        display: block;
+        margin: auto;
+      }
+      #interactContainer {
+        height: 30px;
+      }
+      #cameraContainer {
+        height: 300px;
+        padding-bottom: 20vh;
+      }
+      #cameraResults {
+        height: 350px;
+      }
+      #video {
+        position: absolute;
+        left: 50vw;
+        transform: translate(-50%);
+      }
+    </style>
     <script>
       $(document).ready(function () {
         $.ajaxSetup({ cache: false });
@@ -33,11 +49,49 @@
         }, 2000);
       });
     </script>
-
+  </head>
+  <body>
     <div>
       {% if result != None %}
       <img src="{{ result }}" id="face" width="500" />
       {% endif %}
     </div>
+    <p style="color: white; text-align: center;">
+      You can interact by submitting a picture to send to the eye detection
+      script to end up on this page.
+    </p>
+    <div id="interactContainer">
+      <button id="showcambutton">Turn on Webcam</button>
+    </div>
+    <div id="cameraContainer">
+      <video id="video">Video stream not available.</video>
+      <button
+        id="takepicturebutton"
+        style="position: relative; border: none; top: 150px; display: none;"
+      >
+        Take Photo!
+      </button>
+      <button
+        id="submitbutton"
+        style="
+          position: relative;
+          top: 150px;
+          left: 20px;
+          display: none;
+          border: none;
+          color: white;
+          background-color: blue;
+        "
+      >
+        Submit!
+      </button>
+    </div>
+
+    <!-- <div id="cameraResults"> -->
+    <canvas id="canvas"> </canvas>
+    <!-- <div class="output"> -->
+    <!-- <img id="photo" alt="The screen capture will appear in this box." /> -->
+    <!-- </div> -->
+    <!-- </div> -->
   </body>
 </html>

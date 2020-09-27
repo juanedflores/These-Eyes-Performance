@@ -9,6 +9,7 @@ from flask import jsonify
 from flask_cors import CORS, cross_origin
 import jsonpickle
 import cv2
+import base64
 import numpy as np
 # from flask import request
 # from flask import url_for
@@ -19,7 +20,6 @@ app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
 
 extra_dirs = ['./static/people_photo/test.jpg']
 extra_files = extra_dirs[:]
-
 
 
 cors = CORS(app)
@@ -70,5 +70,42 @@ def get_Test():
     # return make_response(response_pickled, 200)
 
 
+@app.route('/api/handleImages', methods=['POST'])
+def handle_Images():
+    r = request
+    # decode from base64
+    im_bytes = base64.b64decode(r.data)
+    # convert string of image data to uint8
+    nparr = np.frombuffer(im_bytes, np.uint8)
+    # decode image
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Cascade files.
+    face_cascade = cv2.CascadeClassifier(
+        'haarcascade_frontalface_default.xml')
+    eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+
+    # Prep image.
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Iterate faces.
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    for (x, y, w, h) in faces:
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = img[y:y+h, x:x+w]
+        eyes = eye_cascade.detectMultiScale(roi_gray)
+        for (ex, ey, ew, eh) in eyes:
+            print("new eye..")
+            eyeimg = cv2.rectangle(roi_color, (ex, ey),
+                                   (ex+ew, ey+eh), (255, 0, 0), 5)
+            eyeimg = roi_color[ey:ey+eh, ex:ex+ew]
+            # make it a 60 x 60 pixel image.
+            eyeimg = cv2.resize(eyeimg, (60, 60))
+            cv2.imwrite('./tmp/eyes_' + str(ew) + str(eh) + '.jpg', eyeimg)
+
+    return r.values.get('input', '')
+
+
 if __name__ == "__main__":
-    app.run(extra_files=extra_dirs)
+    # app.run(extra_files=extra_dirs)
+    app.run(debug=True)
