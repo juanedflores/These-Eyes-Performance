@@ -33,8 +33,8 @@
             height = width / (4 / 3);
           }
 
-          video.setAttribute("width", width);
-          video.setAttribute("height", height);
+          video.setAttribute("width", width / 3);
+          video.setAttribute("height", height / 3);
           canvas.setAttribute("width", width);
           canvas.setAttribute("height", height);
           streaming = true;
@@ -60,12 +60,14 @@
     takepicturebutton.addEventListener(
       "click",
       function (ev) {
-        takepicture();
+        let image = takepicture();
+        sendPhotoToServer(image, "/api/detectEyes");
+
         ev.preventDefault();
-        video.pause();
+        // video.pause();
         // styling
         submitbutton.style.display = "block";
-        takepicturebutton.style.right = "20px";
+        // takepicturebutton.style.right = "20px";
       },
       false
     );
@@ -73,8 +75,11 @@
     submitbutton.addEventListener(
       "click",
       function (ev) {
-        // takepicture();
+        // var context = canvas.getContext("2d");
+        var imageURI = canvas.toDataURL("image/png");
+        image = imageURI.replace("data:image/png;base64,", "");
 
+        sendPhotoToServer(image, "/api/insertEyes");
         // set a limit to how many pictures the user can submit.
         setTimeout(function () {}, 5000);
       },
@@ -107,29 +112,60 @@
       canvas.width = width;
       canvas.height = height;
       context.drawImage(video, 0, 0, width, height);
-
       // This is where we turn the image to a png.
       var data = canvas.toDataURL("image/png");
       image = data.replace("data:image/png;base64,", "");
-      // TODO: send the png to server to be processed.
-      // newdata = JSON.stringify({ image: data });
-      sendPhotoToServer(image);
 
-      // photo.setAttribute("src", data);
+      return image;
     } else {
       // clearphoto();
+      return "null";
     }
   }
 
-  function sendPhotoToServer(photo) {
+  function sendPhotoToServer(photo, url) {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/handleImages", true);
+    xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "image/png");
     xhr.onreadystatechange = function () {
       // Call a function when the state changes.
-
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         // Request finished. Do processing here.
+
+        console.log("Done");
+        obj = JSON.parse(this.response);
+
+        document.getElementById("eyenum").innerHTML =
+          "<p>Detected <em style='color:red'>" +
+          " " +
+          obj.num[0] +
+          " " +
+          "</em>eyes.</p>";
+        // console.log(obj.img);
+        if (obj.img !== "[]") {
+          responseimg = obj.img;
+          base64img = responseimg.substring(1, responseimg.length - 1);
+          base64img = responseimg.split(",");
+          // console.log(base64img);
+          // console.log(base64img[0]);
+
+          for (let i = 0; i < base64img.length; i++) {
+            img_64 = base64img[i]
+              .substring(3, base64img[i].length - 1)
+              .replace("'", "");
+            // console.log(img_64);
+            let image = new Image();
+            image.src = "data:image/jpg;base64," + img_64;
+            var context = canvas.getContext("2d");
+            if (width && height) {
+              console.log("drawing image..");
+              imgElement = document.createElement("img");
+              imgElement.src = "data:image/jpg;base64," + img_64;
+
+              document.getElementById("eyeimgs").appendChild(imgElement);
+            }
+          }
+        }
       }
     };
     xhr.send(photo);
