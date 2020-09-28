@@ -173,5 +173,4 @@ def post_eyeInsert():
 
 
 if __name__ == "__main__":
-    # app.run(extra_files=extra_dirs)
-    app.run(debug=True)
+    app.run(extra_files=extra_dirs)

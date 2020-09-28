@@ -69,11 +69,12 @@
 		script to end up on this page.
 	</p>
 	<div id="interactContainer">
-		<button id="showcambutton">Turn on Webcam</button>
+		<button id="showcambutton" style="cursor: pointer;">Turn on Webcam</button>
 	</div>
 	<div id="cameraContainer" style="padding:5vh;">
-		<video id="video">Video stream not available.</video>
-		<button id="takepicturebutton" style="position: relative; border: none; top: 150px; display: none;">
+		<video id="video" style="display: none">Video stream not available.</video>
+		<button id="takepicturebutton"
+			style="position: relative; border: none; top: 150px; display: none; cursor: pointer;">
 			Take Photo!
 		</button>
 		<button id="submitbutton" style="
@@ -84,6 +85,7 @@
           border: none;
           color: white;
           background-color: blue;
+	  cursor: pointer;
         ">
 			Submit!
 		</button>
@@ -96,7 +98,7 @@
 
 	</div>
 	<!-- <div id="cameraResults"> -->
-	<canvas id="canvas" style="padding:0; margin:auto; display: block; width: 800px;"> </canvas>
+	<canvas id="canvas" style="padding:5vh 0vh; margin:auto; display: block; width: 800px; display: none;"> </canvas>
 	<!-- <div class="output"> -->
 	<!-- <img id="photo" alt="The screen capture will appear in this box." /> -->
 	<!-- </div> -->

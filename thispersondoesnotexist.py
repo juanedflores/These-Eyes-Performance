@@ -59,7 +59,7 @@ def create_collage(image_dir):
 
     # Specify collage size.
     # TODO: Use the size of a web page to determine collage size.
-    collage_size = 12
+    collage_size = 6
 
     # Horizontally stacking images to create rows.
     rows = []
@@ -125,7 +125,7 @@ async def main():
         # Remove old eye images when it reaches a certain length.
         eyedir = os.listdir("./tmp/")
         diramount = len(os.listdir("./tmp/"))
-        maxfileamount = 144
+        maxfileamount = 36
         if (diramount > maxfileamount):
             for i in range(diramount - maxfileamount):
                 print("deleting eye..")
@@ -143,7 +143,7 @@ async def main():
         response = requests.post(
             server_url, data=img_encoded.tobytes(), headers=headers)
 
-        time.sleep(2)
+        time.sleep(6)
 
 
 if __name__ == "__main__":

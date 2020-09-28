@@ -55,19 +55,18 @@
           console.log("An error occurred: " + err);
         });
       showcambutton.style.display = "none";
+      video.style.display = "block";
     });
 
     takepicturebutton.addEventListener(
       "click",
       function (ev) {
         let image = takepicture();
-        sendPhotoToServer(image, "/api/detectEyes");
+        sendPhotoToServer(image, "/api/detectEyes", false);
 
         ev.preventDefault();
-        // video.pause();
         // styling
-        submitbutton.style.display = "block";
-        // takepicturebutton.style.right = "20px";
+        canvas.style.display = "block";
       },
       false
     );
@@ -75,13 +74,25 @@
     submitbutton.addEventListener(
       "click",
       function (ev) {
-        // var context = canvas.getContext("2d");
         var imageURI = canvas.toDataURL("image/png");
         image = imageURI.replace("data:image/png;base64,", "");
 
-        sendPhotoToServer(image, "/api/insertEyes");
+        sendPhotoToServer(image, "/api/insertEyes", true);
+        // Remove the eyes.
+        document.getElementById("eyeimgs").innerHTML = "";
+        // Clear Canvas.
+        var context = canvas.getContext("2d");
+        context.fillStyle = "#AAA";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        // styling
+        submitbutton.style.display = "none";
+        document.getElementById("eyenum").innerHTML = "Submitted!";
         // set a limit to how many pictures the user can submit.
-        setTimeout(function () {}, 5000);
+
+        takepicturebutton.setAttribute("disabled", "disabled");
+        setTimeout(function () {
+          takepicturebutton.removeAttribute("disabled");
+        }, 5000);
       },
       false
     );
@@ -123,7 +134,7 @@
     }
   }
 
-  function sendPhotoToServer(photo, url) {
+  function sendPhotoToServer(photo, url, submitting) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "image/png");
@@ -132,37 +143,40 @@
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         // Request finished. Do processing here.
 
-        console.log("Done");
-        obj = JSON.parse(this.response);
+        if (!submitting) {
+          obj = JSON.parse(this.response);
 
-        document.getElementById("eyenum").innerHTML =
-          "<p>Detected <em style='color:red'>" +
-          " " +
-          obj.num[0] +
-          " " +
-          "</em>eyes.</p>";
-        // console.log(obj.img);
-        if (obj.img !== "[]") {
-          responseimg = obj.img;
-          base64img = responseimg.substring(1, responseimg.length - 1);
-          base64img = responseimg.split(",");
-          // console.log(base64img);
-          // console.log(base64img[0]);
+          document.getElementById("eyenum").innerHTML =
+            "<p>Detected <em style='color:red'>" +
+            " " +
+            obj.num[0] +
+            " " +
+            "</em>eyes.</p>";
+          if (obj.img !== "[]") {
+            // Get response which is a dictionary and turn it into an array.
+            responseimg = obj.img;
+            base64img = responseimg.substring(1, responseimg.length - 1);
+            base64img = responseimg.split(",");
+            // Iterate through the array.
+            if (base64img.length >= 1) {
+              submitbutton.style.display = "block";
+            }
+            submitbutton.style.display = "block";
+            for (let i = 0; i < base64img.length; i++) {
+              img_64 = base64img[i]
+                .substring(3, base64img[i].length - 1)
+                .replace("'", "");
+              // console.log(img_64);
+              let image = new Image();
+              image.src = "data:image/jpg;base64," + img_64;
+              var context = canvas.getContext("2d");
+              if (width && height) {
+                console.log("drawing image..");
+                imgElement = document.createElement("img");
+                imgElement.src = "data:image/jpg;base64," + img_64;
 
-          for (let i = 0; i < base64img.length; i++) {
-            img_64 = base64img[i]
-              .substring(3, base64img[i].length - 1)
-              .replace("'", "");
-            // console.log(img_64);
-            let image = new Image();
-            image.src = "data:image/jpg;base64," + img_64;
-            var context = canvas.getContext("2d");
-            if (width && height) {
-              console.log("drawing image..");
-              imgElement = document.createElement("img");
-              imgElement.src = "data:image/jpg;base64," + img_64;
-
-              document.getElementById("eyeimgs").appendChild(imgElement);
+                document.getElementById("eyeimgs").appendChild(imgElement);
+              }
             }
           }
         }
